@@ -17,7 +17,7 @@ import {
 } from 'react-native-paper';
 import asyncAlert from '../asyncAlert';
 
-const db = SQLite.openDatabase('little_lemon');
+const db = await SQLite.openDatabaseAsync('little_lemon');
 
 export default function Index() {
   const [textInputValue, setTextInputValue] = useState('');
@@ -28,11 +28,11 @@ export default function Index() {
   const [customers, setCustomers] = useState([]);
 
   useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(
+    db.withExclusiveTransactionAsync((txn) => {
+      await txn.execAsync(
         'create table if not exists customers (id integer primary key not null, uid text, name text);'
       );
-      tx.executeSql('select * from customers', [], (_, { rows }) => {
+      await txn.getAllAsync('select * from customers', [], (_, { rows }) => {
         const customers = rows._array.map((item) => ({
           uid: item.uid,
           name: item.name,
